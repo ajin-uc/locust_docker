@@ -1,0 +1,64 @@
+# do not update this file
+# copy it as docker-compose.yml tot he root directory
+version: '3.6'
+services:
+
+  # extractor webapp
+  locust-master:
+    build:
+      context: .
+      dockerfile: ./docker_locust/Dockerfile
+    image: locust_image:1.0
+    environment:
+      - LOCUST_MODE=master
+      - TARGET_URL=http://test.codaxtr-extractor.webapp.ca-ven.unicourt.internal:30605
+    container_name: locust-master
+    expose:
+      - "8089"
+    ports:
+      - "8089:8089"
+    volumes:
+      - /home/mis/workspace/codaxtr-extractor/test/extractor_locust/locust_src:/test
+      - /etc/hosts:/etc/hosts
+    stdin_open: true
+    tty: true
+
+  # extractor webapp
+  locust-minion:
+    depends_on:
+      - locust-master
+    image: locust_image:1.0
+    environment:
+      - LOCUST_MODE=slave
+      - MASTER_HOST=locust-master
+      - TARGET_URL=http://test.codaxtr-extractor.webapp.ca-ven.unicourt.internal:30605
+    volumes:
+      - /home/mis/workspace/codaxtr-extractor/test/extractor_locust/locust_src:/test
+      - /etc/hosts:/etc/hosts
+    stdin_open: true
+    tty: true
+
+  # extractor webapp
+#  locust-standalone:
+#    build:
+#      context: .
+#      dockerfile: ./docker_locust/Dockerfile
+#    image: locust_image:1.0
+#    environment:
+#      - LOCUST_MODE=standalone
+#      - TARGET_URL=http://test.codaxtr-extractor.webapp.ca-ven.unicourt.internal:30605
+#    container_name: locust-standalone
+#    expose:
+#      - "8090"
+#    ports:
+#      - "8090:8089"
+#    volumes:
+#      - /home/mis/workspace/codaxtr-extractor/test/extractor_locust/locust_src:/test
+#      - /etc/hosts:/etc/hosts
+#    stdin_open: true
+#    tty: true
+
+networks:
+  default:
+    external:
+      name: locust_net
